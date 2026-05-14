@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ShoppingCart, Search, Menu, X, Phone, Star } from "lucide-react";
+import HomePage from "./components/HomePage";
 
 // ─── Types ────────────────────────────────────────────────────────
 interface Product {
@@ -272,6 +275,7 @@ export default function App() {
   });
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [view, setView] = useState<"home" | "shop">("home");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const toastIdRef = useRef(0);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -464,31 +468,35 @@ const bannerTimerRef = useRef<any>(undefined);
       </div>
 
       {/* ─── Top Call-to-Order Bar ─── */}
-      <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white text-center py-2 text-sm font-semibold">
-        📞 CALL TO ORDER: 07006000000, 02018883300
-      </div>
+      <motion.div
+        initial={{ y: -40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="bg-gradient-to-r from-orange-500 to-amber-500 text-white text-center py-2 text-sm font-semibold flex items-center justify-center gap-2"
+      >
+        <Phone size={13} /> CALL TO ORDER: 07006000000 &nbsp;|&nbsp; 02018883300
+      </motion.div>
 
       {/* ─── Header ─── */}
-      <header className="bg-white shadow-md sticky top-0 z-50">
+      <header className="bg-white shadow-md sticky top-0 z-50" style={{ backdropFilter: "blur(16px)" }}>
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center gap-4">
             {/* Mobile menu toggle */}
             <button
-              className="lg:hidden p-1"
+              className="lg:hidden p-1 text-gray-700 hover:text-orange-500 transition"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
 
             {/* Logo */}
             <div className="flex-shrink-0">
-              <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">
-                <span className="text-orange-500">CHIXAT</span>
-                <span className="text-gray-800"> SLIM FIT</span>
-                <span className="ml-1 inline-block text-orange-400 text-sm">★</span>
-              </h1>
+              <button onClick={() => setView("home")} className="text-left">
+                <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">
+                  <span className="text-orange-500">CHIXAT</span>
+                  <span className="text-gray-800"> SLIM FIT</span>
+                  <Star size={14} className="inline text-orange-400 ml-1 fill-orange-400" />
+                </h1>
+              </button>
             </div>
 
             {/* Search Bar */}
@@ -514,29 +522,31 @@ const bannerTimerRef = useRef<any>(undefined);
               </svg>
             </button>
 
-            {/* Account */}
-            <button className="hidden md:flex items-center gap-2 text-gray-700 hover:text-orange-500 transition text-sm font-medium">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              Account
+            {/* Shop Nav link */}
+            <button
+              onClick={() => setView("shop")}
+              className="hidden md:flex items-center gap-1.5 text-gray-700 hover:text-orange-500 transition text-sm font-semibold"
+            >
+              <Search size={16} /> Shop All
             </button>
 
             {/* Cart */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
               className="relative flex items-center gap-2 text-gray-700 hover:text-orange-500 transition text-sm font-medium"
               onClick={() => setCartOpen(true)}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
-              </svg>
-              <span className="hidden md:inline">Cart</span>
+              <ShoppingCart size={20} />
+              <span className="hidden md:inline font-semibold">Cart</span>
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-1 md:-right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                <motion.span
+                  initial={{ scale: 0 }} animate={{ scale: 1 }}
+                  className="absolute -top-2 -right-1 md:-right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"
+                >
                   {cartCount}
-                </span>
+                </motion.span>
               )}
-            </button>
+            </motion.button>
           </div>
 
           {/* Mobile search */}
@@ -582,9 +592,29 @@ const bannerTimerRef = useRef<any>(undefined);
         )}
       </header>
 
-      {/* ─── Main Content ─── */}
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex gap-4">
+      {/* ─── HOME PAGE VIEW ─── */}
+      <AnimatePresence mode="wait">
+        {view === "home" && (
+          <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+            <HomePage
+              products={PRODUCTS}
+              onOpenProduct={openProduct}
+              onShopAll={() => setView("shop")}
+              formatPrice={formatPrice}
+            />
+          </motion.div>
+        )}
+
+        {view === "shop" && (
+          <motion.div key="shop" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}>
+            {/* ─── SHOP Header ─── */}
+            <div className="bg-gradient-to-r from-orange-500 to-amber-400 py-10 text-white text-center">
+              <h2 className="text-3xl md:text-4xl font-black font-display">Our Full Collection</h2>
+              <p className="mt-2 text-orange-100 text-sm">Premium shapewear for every body — sculpt, support, and shine.</p>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 py-6">
+              <div className="flex gap-4">
           {/* ─── Desktop Sidebar ─── */}
           <aside className="hidden lg:block w-56 flex-shrink-0">
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -780,8 +810,11 @@ const bannerTimerRef = useRef<any>(undefined);
               ))}
             </div>
           </main>
-        </div>
-      </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ─── Product Detail Modal ─── */}
       {selectedProduct && (
@@ -1336,7 +1369,7 @@ const bannerTimerRef = useRef<any>(undefined);
       )}
 
       {/* ─── Footer ─── */}
-      <footer className="bg-gray-800 text-white mt-8">
+      <footer className="text-white mt-8" style={{ background: "linear-gradient(135deg,#0f0f0f,#1a0a00)" }}>
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Brand */}
@@ -1406,8 +1439,8 @@ const bannerTimerRef = useRef<any>(undefined);
             </div>
           </div>
 
-          <div className="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500 text-sm">
-            © 2026 CHIXAT SLIM FIT. All rights reserved. Premium Weightloss Products.
+          <div className="border-t border-white/10 mt-8 pt-6 text-center text-gray-500 text-sm">
+            © 2026 <span className="text-orange-400 font-bold">CHIXAT SLIM FIT</span>. All rights reserved. Premium Weightloss & Body Transformation Products.
           </div>
         </div>
       </footer>
